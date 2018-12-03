@@ -19,15 +19,10 @@ import { ViewChild } from '@angular/core';
       </kendo-chart-category-axis>
       <kendo-chart-legend position="bottom" orientation="horizontal"></kendo-chart-legend>
       <kendo-chart-tooltip format="{0}"></kendo-chart-tooltip>
+
       <kendo-chart-series>
-        <kendo-chart-series-item type="line" [data]="data1" xField="year" yField="value" [name]="series1">
-        </kendo-chart-series-item>
-        <kendo-chart-series-item type="line" [data]="data2" xField="year" yField="value" [name]="series2">
-        </kendo-chart-series-item>
-        <kendo-chart-series-item type="line" [data]="data3" xField="year" yField="value" [name]="series3">
-        </kendo-chart-series-item>
-        <kendo-chart-series-item type="line" [data]="data4" xField="year" yField="value" [name]="series4">
-        </kendo-chart-series-item>
+      <kendo-chart-series-item *ngFor="let series of finalMap1;" type = "line" [data]="series">
+      </kendo-chart-series-item>
       </kendo-chart-series>
     </kendo-chart>
   `
@@ -35,14 +30,11 @@ import { ViewChild } from '@angular/core';
 export class AppComponent {
   title = 'fission-chart';
 
-  public csvRecords: any[] = [];
-  public csvData: any[] = [];
-  public categories : any[] = [];
-  public data1 : any[] = [];
-  public data2 : any[] = [];
-  public data3 : any[] = [];
-  public data4 : any[] = [];
+  public years : any[] = [];
   public items : any[] = [];
+  public categories : any[] = [];
+  public finalMap : any[] = [];
+  public finalMap1 : any[] = [];
 
   @ViewChild('fileImportInput') fileImportInput: any;
 
@@ -71,11 +63,18 @@ export class AppComponent {
           this.items[series] = [];
           record.split(',').slice(1).forEach(pipedRecord => {
             var splitPipedRecord = pipedRecord.split('|');
-            this.items[series].push({year:splitPipedRecord[0],value:splitPipedRecord[1]});
-            //this.items[series][splitPipedRecord[0].toString()] = splitPipedRecord[1];
+            //this.items[series].push({year:splitPipedRecord[0],value:splitPipedRecord[1]});
+            this.items[series][splitPipedRecord[0].toString()] = splitPipedRecord[1];
+            this.categories.push(splitPipedRecord[0].toString());
+
           });
         }
         });
+
+        this.categories.sort();
+        console.log(this.categories);
+        this.categories = Array.from(new Set(this.categories));
+        console.log(this.categories);
         
         var keys =  Object.keys(this.items);
         
@@ -83,26 +82,25 @@ export class AppComponent {
         keys.forEach(key => {
           
             console.log(this.items[key]);
+            this.finalMap[key] = [];
+            this.categories.forEach(element => {
+              if(this.items[key][element]){
+                this.finalMap[key].push(this.items[key][element])
+              }else {
+                this.finalMap[key].push("0");
+              }
+              
+            });
           
           
         });
-        // let cats = [];
-        // let data1 = [];
-        // records.forEach(record => {
-        //   cats.push(record.split('|')[0]);
-        //   data1.push(record.split('|')[1]);
-        // });
-        // this.categories = cats;
-        // this.data1 = data1;
-        this.data1 = this.items['SERIES1'];
-        this.data2 = this.items['SERIES2'];
-        this.data3 = this.items['SERIES3'];
-        this.data4 = this.items['SERIES4'];
-        //console.log(this.categories);
-
-        //let headersRow = this.getHeaderArray(csvRecordsArray);
-
-        //this.csvRecords = this.getDataRecordsArrayFromCSVFile(csvRecordsArray, headersRow.length);
+        console.log(this.finalMap);
+        keys.forEach(key => {
+          this.finalMap1.push(this.finalMap[key]);
+        });
+        
+        console.log(this.finalMap1);
+  
       }
 
       reader.onerror = function() {
@@ -111,33 +109,8 @@ export class AppComponent {
 
     } else {
       alert("Please import valid .csv file.");
-      this.fileReset();
+      
     }
-  }
-
-  getDataRecordsArrayFromCSVFile(csvRecordsArray: any, headerLength: any) {
-    var dataArr = []
-
-    for (let i = 1; i < csvRecordsArray.length; i++) {
-      let data = csvRecordsArray[i].split(',');
-
-      // FOR EACH ROW IN CSV FILE IF THE NUMBER OF COLUMNS
-      // ARE SAME AS NUMBER OF HEADER COLUMNS THEN PARSE THE DATA
-      if (data.length == headerLength) {
-
-        var csvRecord: CSVRecord = new CSVRecord();
-
-        csvRecord.firstName = data[0].trim();
-        csvRecord.lastName = data[1].trim();
-        csvRecord.email = data[2].trim();
-        csvRecord.phoneNumber = data[3].trim();
-        csvRecord.title = data[4].trim();
-        csvRecord.occupation = data[5].trim();
-
-        dataArr.push(csvRecord);
-      }
-    }
-    return dataArr;
   }
 
   // CHECK IF FILE IS A VALID CSV FILE
@@ -145,34 +118,5 @@ export class AppComponent {
     return file.name.endsWith(".csv");
   }
 
-  // GET CSV FILE HEADER COLUMNS
-  getHeaderArray(csvRecordsArr: any) {
-    let headers = csvRecordsArr[0].split(',');
-    let headerArray = [];
-    for (let j = 0; j < headers.length; j++) {
-      headerArray.push(headers[j]);
-    }
-    return headerArray;
-  }
 
-  fileReset() {
-    this.fileImportInput.nativeElement.value = "";
-    this.csvRecords = [];
-  }
-
-}
-
-export class CSVRecord{
-
-  public firstName: any;
-  public lastName: any;
-  public email: any;
-  public phoneNumber: any;
-  public title: any;
-  public occupation: any;
-
-  constructor()
-  {
-
-  }
 }

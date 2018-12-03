@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { ChartsModule } from '@progress/kendo-angular-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import 'hammerjs';
+import { CommonModule } from '@angular/common';
 
 
 
@@ -18,7 +19,8 @@ import 'hammerjs';
     BrowserModule,
     AppRoutingModule,
     ChartsModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    CommonModule
   ],
   providers: [],
   bootstrap: [AppComponent]
